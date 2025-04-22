@@ -10,7 +10,7 @@
     │   ├── java  # Código fuente Java
     │   │   └── com  # Paquete base de la aplicación
     │   │       └── ecommerce  # Subpaquete para la aplicación ecommerce
-    │   │           └── giftshopbackend  # Subpaquete específico para giftshopbackend
+    │   │           └── giftshopbackend  # Subpaquete específico para gift-shop-backend
     │   │               └── GiftshopBackendApplication.java  # Clase principal de la aplicación Java
     │   └── resources  # Archivos de configuración y recursos
     │       ├── application.properties  # Archivo de configuración de la aplicación (por ejemplo, base de datos, etc.)
@@ -20,7 +20,7 @@
         └── java  # Código fuente de las pruebas en Java
             └── com  # Paquete base para las pruebas
                 └── ecommerce  # Subpaquete para las pruebas de ecommerce
-                    └── giftshopbackend  # Subpaquete para las pruebas específicas de giftshopbackend
+                    └── giftshopbackend  # Subpaquete para las pruebas específicas de gift-shop-backend
                         └── GiftshopBackendApplicationTests.java  # Clase de pruebas para la aplicación
 
 ```

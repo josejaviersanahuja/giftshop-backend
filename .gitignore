@@ -4,7 +4,11 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# Archivos sensibles de configuración
+src/main/resources/application.properties
+src/main/resources/application.yml
+
+### STS (Spring Tool Suite) ###
 .apt_generated
 .classpath
 .factorypath
@@ -18,6 +22,7 @@ target/
 *.iws
 *.iml
 *.ipr
+out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,3 +36,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+
+### Sistema operativo ###
+.DS_Store
+Thumbs.db
