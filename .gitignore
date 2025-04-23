@@ -6,7 +6,13 @@ target/
 
 # Archivos sensibles de configuración
 src/main/resources/application.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-test.properties
 src/main/resources/application.yml
+
+# Scripts locales de entorno
+set-env-*.sh
 
 ### STS (Spring Tool Suite) ###
 .apt_generated
