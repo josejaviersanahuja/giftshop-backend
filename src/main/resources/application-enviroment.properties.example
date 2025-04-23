@@ -1,4 +1,26 @@
+# 🛢️ Base de datos
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASS}
+
+# 🌐 Servidor
 server.port=${PORT}
+
+# 🌍 CORS
+frontend.allowed.origin=${CORS_URL}
+
+# 🔒 Seguridad de Actuator (solo health e info, con auth)
+management.endpoints.web.exposure.include=${ACTUATOR_EXPOSE:health,info}
+management.endpoint.health.show-details=${HEALTH_DETAILS:when_authorized}
+management.security.enabled=${ACTUATOR_SECURITY:true}
+
+# 🔇 Logging minimal en producción
+logging.level.org.springframework.web=${LOG_WEB_LEVEL:INFO}
+logging.level.com.ecommerce.giftshopbackend=${LOG_APP_LEVEL:INFO}
+
+# 🔐 HTTPS obligatorio
+server.ssl.enabled=${SSL_ENABLED:true}
+server.ssl.key-store=${SSL_KEYSTORE:classpath:keystore.p12}
+server.ssl.key-store-password=${SSL_KEYSTORE_PASSWORD}
+server.ssl.key-store-type=${SSL_KEYSTORE_TYPE:PKCS12}
+server.ssl.key-alias=${SSL_KEY_ALIAS:giftshop-backend}
