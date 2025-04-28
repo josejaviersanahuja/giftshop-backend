@@ -1,4 +1,4 @@
-// UsuarioRepository.java
+// infrastructure/usuario/UsuarioRepositoryImpl.java
 package com.ecommerce.giftshopbackend.infrastructure.usuario;
 
 import java.util.Optional;
@@ -11,6 +11,8 @@ import com.ecommerce.giftshopbackend.domain.usuario.UsuarioPublicDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioRepository;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
+
+// SRC/infrastructure/usuario/UsuarioRepositoryImpl.java -> SRC/domain/usuario/Usuario.java, SRC/domain/usuario/UsuarioPublicDTO.java, SRC/domain/usuario/UsuarioRepository.java
 
 @Repository
 public class UsuarioRepositoryImpl implements UsuarioRepository {

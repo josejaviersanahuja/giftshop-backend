@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+// SRC/domain/usuario/UsuarioService.java -> SRC/infrastructure/usuario/UsuarioRepositoryImpl.java
+
 @Service
 public class UsuarioService {
 
