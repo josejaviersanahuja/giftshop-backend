@@ -4,4 +4,5 @@ import java.util.Optional;
 public interface UsuarioRepository {
     Usuario actualizarDetalles(Long id, Usuario nuevosDetalles);
     Optional<UsuarioPublicDTO> obtenerUsuarioPublico(Long id);
+    Optional<UsuarioDTO> findByEmail(String email);
 }

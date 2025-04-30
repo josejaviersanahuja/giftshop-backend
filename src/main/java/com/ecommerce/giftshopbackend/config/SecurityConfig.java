@@ -17,7 +17,7 @@ public class SecurityConfig {
                 .cors(withDefaults()) // Activa CORS (debes tener WebConfig también)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/**").hasRole("USER")
+                        .requestMatchers("/api/v1/**").permitAll()//.hasRole("USER")
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
