@@ -16,7 +16,7 @@ public interface AuthService {
      * @return Un objeto LoginResponseDTO con los tokens.
      * @throws AuthenticationException Si las credenciales son inválidas o el usuario no puede autenticarse.
      */
-    LoginResponseDTO authenticateUserByPassword(String email, String password);
+    LoginResponseDTO authenticateUserByPassword(String email, String password, String ip, String userAgent, String origen, boolean esMovil, String plataforma) throws AuthenticationException;
 
     void initiateOtpLogin(String email) throws AuthenticationException;
 

@@ -3,7 +3,6 @@ package com.ecommerce.giftshopbackend.infrastructure.usuario;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.time.LocalDateTime;
 import static org.jooq.impl.DSL.field;
 import static com.ecommerce.giftshopbackend.jooq.tables.UsuarioDetalle.USUARIO_DETALLE;
 import static com.ecommerce.giftshopbackend.jooq.tables.Usuario.USUARIO;
@@ -38,7 +37,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         try {
             String currentNickname = dsl.select(USUARIO.NICKNAME)
                     .from(USUARIO)
-                    .where(USUARIO.ID.eq(id.intValue()))
+                    .where(USUARIO.ID.eq(id))
                     .fetchOptional(USUARIO.NICKNAME)
                     .orElse(null);
 
@@ -52,7 +51,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
             if (!Objects.equals(nuevoNickname, currentNickname) && nuevoNickname != null) {
                 dsl.update(USUARIO)
                         .set(USUARIO.NICKNAME, nuevoNickname)
-                        .where(USUARIO.ID.eq(id.intValue()))
+                        .where(USUARIO.ID.eq(id))
                         .execute();
             }
 
@@ -73,11 +72,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                 dsl.update(USUARIO_DETALLE)
                         // Mapeo de lat/lon a Point usando PostGI
                         .set(USUARIO_DETALLE.UBICACION, ubicacionValueExpression)
-                        .where(USUARIO_DETALLE.ID.eq(id.intValue())) // SIN .intValue()
+                        .where(USUARIO_DETALLE.ID.eq(id)) // SIN .intValue()
                         .execute();
-            } else {
-                // Si no hay lat/lon, crear una expresión de valor NULL explícito
-                ubicacionValueExpression = val(null, ubicacionDataType);
             }
 
             dsl.update(USUARIO_DETALLE)
@@ -92,7 +88,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                     .set(USUARIO_DETALLE.LOCALE, nuevosDetalles.getLocale())
                     .set(USUARIO_DETALLE.INTERESES,
                             nuevosDetalles.getIntereses() != null ? String.join(",", nuevosDetalles.getIntereses()) : null)
-                    .where(USUARIO_DETALLE.ID.eq(id.intValue()))
+                    .where(USUARIO_DETALLE.ID.eq(id))
                     .execute();
 
             return nuevosDetalles;

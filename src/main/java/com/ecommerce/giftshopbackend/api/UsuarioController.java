@@ -4,6 +4,11 @@ package com.ecommerce.giftshopbackend.api;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioPublicDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioService;
+import com.ecommerce.giftshopbackend.util.RequestMetadata;
+import com.ecommerce.giftshopbackend.util.RequestMetadataExtractor;
+import com.ecommerce.giftshopbackend.util.UserAgentUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +22,16 @@ public class UsuarioController {
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
+    }
+
+    @PostMapping("")
+    public ResponseEntity<UsuarioDTO> createUsuarioWithPassword(
+            String email, String password, String nickname, String codigoReferencia, HttpServletRequest request
+    ) {
+        RequestMetadata requestMetadata = RequestMetadataExtractor.extract(request);
+
+        // UsuarioDTO creado = usuarioService.crearUsuario(usuarioDTO, requestMetadata);
+        return ResponseEntity.status(HttpStatus.CREATED).body({});
     }
 
     @PutMapping("/{id}/details")

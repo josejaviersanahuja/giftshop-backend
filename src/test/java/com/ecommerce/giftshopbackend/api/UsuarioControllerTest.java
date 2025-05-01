@@ -5,9 +5,9 @@ package com.ecommerce.giftshopbackend.api;
 
 import com.ecommerce.giftshopbackend.domain.log.LogError; // ¡Importa LogError!
 import com.ecommerce.giftshopbackend.domain.log.LogErrorService; // ¡Importa LogErrorService!
+import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
 import org.mockito.ArgumentCaptor; // ¡Importa ArgumentCaptor!
 
-import com.ecommerce.giftshopbackend.domain.usuario.Usuario;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioPublicDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioService;
 import com.ecommerce.giftshopbackend.test.config.TestLoggingConfig; // Importa la configuración de test
@@ -57,12 +57,12 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("PUT /api/v1/users/{id}/details - devuelve 200 OK")
     void actualizarDetalles_devuelve200() throws Exception {
-        Usuario mockUsuario = new Usuario();
+        UsuarioDTO mockUsuario = new UsuarioDTO();
         mockUsuario.setId(1L);
 
         // Mocking the service method call
         // ¡Usamos el 'usuarioService' inyectado, que ahora es el mock de TestLoggingConfig!
-        Mockito.when(usuarioService.actualizarDetalles(Mockito.eq(1L), Mockito.any(Usuario.class)))
+        Mockito.when(usuarioService.actualizarDetalles(Mockito.eq(1L), Mockito.any(UsuarioDTO.class)))
                 .thenReturn(mockUsuario);
 
         mockMvc.perform(put("/api/v1/users/1/details")
@@ -80,7 +80,7 @@ class UsuarioControllerTest {
                 1L,
                 "testuser",
                 "Spain",
-                "http://example.com/avatar.png",
+                "https://example.com/avatar.png",
                 "es"
         );
         // Mocking the service method call

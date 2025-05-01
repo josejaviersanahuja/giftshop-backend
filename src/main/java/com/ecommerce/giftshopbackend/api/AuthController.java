@@ -7,11 +7,18 @@ import com.ecommerce.giftshopbackend.domain.auth.AuthService;
 // TODO: Añadir DTOs para OTP (e.g., OtpInitiateRequestDTO, OtpVerifyRequestDTO, OtpResponseDTO?)
 // TODO: Añadir DTOs para Refresh Token (e.g., RefreshTokenRequestDTO)
 
-import org.springframework.http.HttpStatus;
+import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
+import com.ecommerce.giftshopbackend.util.RequestMetadata;
+import com.ecommerce.giftshopbackend.util.RequestMetadataExtractor;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import com.ecommerce.giftshopbackend.util.UserAgentUtils;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,9 +38,19 @@ public class AuthController {
      * @return ResponseEntity con el DTO de respuesta (tokens).
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> loginWithPassword(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<LoginResponseDTO> loginWithPassword(@Valid @RequestBody LoginRequestDTO loginRequestDTO, HttpServletRequest request) {
         // La lógica principal está en el servicio
-        LoginResponseDTO response = authService.authenticateUserByPassword(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+        RequestMetadata requestMetadata = RequestMetadataExtractor.extract(request);
+
+        LoginResponseDTO response = authService.authenticateUserByPassword(
+                loginRequestDTO.getEmail(),
+                loginRequestDTO.getPassword(),
+                requestMetadata.ip(),
+                requestMetadata.userAgent(),
+                requestMetadata.origen(),
+                requestMetadata.esMovil(),
+                requestMetadata.plataforma()
+        );
         // Excepciones manejadas globalmente (401, 400, etc.)
         return ResponseEntity.ok(response);
     }
@@ -69,7 +86,7 @@ public class AuthController {
         // LoginResponseDTO response = authService.verifyOtpAndLogin(...);
         // return ResponseEntity.ok(response);
         // Por ahora, devolvemos un DTO vacío como placeholder
-        return ResponseEntity.ok(new LoginResponseDTO("dummy_jwt_token_otp", "dummy_refresh_token_otp"));
+        return ResponseEntity.ok(new LoginResponseDTO("dummy_jwt_token_otp", "dummy_refresh_token_otp", UUID.randomUUID(), new UsuarioDTO()));
     }
 
     // --- Other Auth Endpoints ---
@@ -87,7 +104,7 @@ public class AuthController {
         // LoginResponseDTO response = authService.refreshJwtToken(...);
         // return ResponseEntity.ok(response);
         // Placeholder
-        return ResponseEntity.ok(new LoginResponseDTO("new_dummy_jwt_token", "potentially_new_dummy_refresh_token"));
+        return ResponseEntity.ok(new LoginResponseDTO("new_dummy_jwt_token", "potentially_new_dummy_refresh_token", UUID.randomUUID(), new UsuarioDTO()));
     }
 
     /**

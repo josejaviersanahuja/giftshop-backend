@@ -2,6 +2,7 @@
 
 package com.ecommerce.giftshopbackend.config;
 
+import com.ecommerce.giftshopbackend.domain.exception.DataIntegrityException;
 import com.ecommerce.giftshopbackend.domain.exception.ResourceNotFoundException;
 import com.ecommerce.giftshopbackend.domain.exception.UnauthorizedException;
 import com.ecommerce.giftshopbackend.domain.log.LogErrorService;
@@ -132,5 +133,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
        logger.warn("Unauthorized Access (Custom): {} {}", servletRequest.getMethod(), servletRequest.getRequestURI(), ex);
        createLogError(ex, servletRequest, "UNAUTHORIZED", "WARN"); // Tipo específico
        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED); // HTTP 401
+    }
+
+    //
+    @ExceptionHandler(DataIntegrityException.class)
+    public ResponseEntity<Object> handleDataIntegrity(DataIntegrityException ex, WebRequest request) {
+        HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
+        logger.error(ex.getMessage(), ex);
+        createLogError(ex, servletRequest, "DATA_INTEGRITY", "ERROR");
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

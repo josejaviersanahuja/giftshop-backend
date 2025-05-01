@@ -15,7 +15,7 @@ public class LogError {
     private String stackTrace;
     private String endpoint;
     private String metodoHttp;
-    private Integer usuarioId;
+    private Long usuarioId;
     private Instant fecha; // O Timestamp
 
     // Getters y setters (puedes generarlos con tu IDE)
@@ -34,8 +34,8 @@ public class LogError {
     public void setEndpoint(String endpoint) { this.endpoint = endpoint; }
     public String getMetodoHttp() { return metodoHttp; }
     public void setMetodoHttp(String metodoHttp) { this.metodoHttp = metodoHttp; }
-    public Integer getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(Integer usuarioId) { this.usuarioId = usuarioId; }
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
     public Instant getFecha() { return fecha; }
     public void setFecha(Instant fecha) { this.fecha = fecha; }
 }

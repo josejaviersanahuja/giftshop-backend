@@ -5,14 +5,21 @@ package com.ecommerce.giftshopbackend.infrastructure.auth; // ¡Cambiamos el paq
 import com.ecommerce.giftshopbackend.domain.auth.AuthService;
 import com.ecommerce.giftshopbackend.domain.auth.LoginResponseDTO; // Asegúrate de que la ruta sea correcta si moviste los DTOs
 import com.ecommerce.giftshopbackend.domain.exception.AuthenticationException; // Necesitaremos esta excepción
+import com.ecommerce.giftshopbackend.domain.exception.DataIntegrityException;
 import com.ecommerce.giftshopbackend.domain.exception.ResourceNotFoundException; // Y esta también
+import com.ecommerce.giftshopbackend.domain.sesion.SesionActivaInsertDTO;
+import com.ecommerce.giftshopbackend.domain.sesion.SesionActivaRepository;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioCredencialesDTO;
+import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioRepository; // Importar la interfaz del repositorio desde el dominio
 
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 // Necesitaremos dependencias para JWT después, como io.jsonwebtoken.Jwts, etc.
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,18 +29,18 @@ public class AuthServiceImpl implements AuthService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider; // Necesitaremos un proveedor de JWT
-    // TODO: private final SesionActivaRepository sesionActivaRepository; // Necesitaremos un repositorio para Sesiones Activas, probablemente en infrastructure.auth o infrastructure.session
+    private final SesionActivaRepository sesionActivaRepository; // Necesitaremos un repositorio para Sesiones Activas, probablemente en infrastructure.auth o infrastructure.session
 
     // Constructor con inyección de dependencias
-    public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider/*, SesionActivaRepository sesionActivaRepository*/) {
+    public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider, SesionActivaRepository sesionActivaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
-        // TODO: this.sesionActivaRepository = sesionActivaRepository;
+        this.sesionActivaRepository = sesionActivaRepository;
     }
 
     @Override
-    public LoginResponseDTO authenticateUserByPassword(String email, String password) {
+    public LoginResponseDTO authenticateUserByPassword(String email, String password, String ip, String userAgent, String origen, boolean esMovil, String plataforma) {
         // 1. Encontrar al usuario por email
         // Usamos Optional.orElseThrow con la excepción personalizada ¡Justo lo que hablábamos!
         UsuarioCredencialesDTO credenciales = usuarioRepository.findCredentialsByEmail(email)
@@ -44,31 +51,37 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthenticationException("Credenciales inválidas"); // Necesitas una excepción personalizada para autenticación fallida
         }
 
-        // 3. Generar tokens (Access Token y Refresh Token)
-        // TODO: Implementar la generación de JWT y Refresh Token
-        // Aquí generamos el JWT
-        String jwt = jwtTokenProvider.generateToken(email); // o puedes usar credenciales.getId() si prefieres
-
+        // 3. Generar tokens (Access Token, Refresh Token y sesionId)
+        String accessToken = jwtTokenProvider.generateToken(email); // o puedes usar credenciales.getId() si prefieres
         // (Dummy) refresh token — para producción, guarda y maneja en DB
-        String refreshToken = "dummy-refresh-token-" + UUID.randomUUID();
+        String refreshToken = "refresh-token-" + UUID.randomUUID();
+        String hashedRefreshToken = passwordEncoder.encode(refreshToken);
+        UUID idSesionUnica = UUID.randomUUID();
 
         // 4. Guardar el Refresh Token en la tabla SesionActiva
-        // TODO: Implementar la lógica para crear y guardar la SesionActiva
-        // Necesitas acceso al HttpServletRequest aquí o pasarlo como parámetro desde el controlador para IP/UserAgent
-        // SesionActiva nuevaSesion = new SesionActiva();
-        // nuevaSesion.setUsuario(usuario); // Asumiendo relación en Usuario
-        // nuevaSesion.setRefreshToken(refreshToken);
-        // nuevaSesion.setIdSesionUnico(UUID.randomUUID()); // Generar un UUID único para la sesión
-        // // ... obtener IP y UserAgent desde el Request
-        // nuevaSesion.setFechaCreacion(Instant.now());
-        // nuevaSesion.setFechaExpiracion(Instant.now().plusSeconds(30 * 24 * 60 * 60)); // Ejemplo: 30 días de expiración
+        SesionActivaInsertDTO nuevaSesion;
+        nuevaSesion = new SesionActivaInsertDTO();
+        nuevaSesion.setUsuarioId(credenciales.getId()); // Asumiendo relación en Usuario
+        nuevaSesion.setRefreshToken(hashedRefreshToken); // guardamos el hash
+        nuevaSesion.setIdSesionUnico(idSesionUnica); // Generar un UUID único para la sesión
+        nuevaSesion.setIp(ip);
+        nuevaSesion.setPlataforma(plataforma);
+        nuevaSesion.setEsMovil(esMovil);
+        nuevaSesion.setUserAgent(userAgent);
+        Instant instant = Instant.now();
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+        nuevaSesion.setFechaCreacion(localDateTime);
+        nuevaSesion.setFechaExpiracion(localDateTime.plusDays(30));
+        sesionActivaRepository.guardarSesion(nuevaSesion);
 
-        // TODO: sesionActivaRepository.save(nuevaSesion);
-
+        // 5. obtenemos el usuarioDTO
+        UsuarioDTO usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new DataIntegrityException(
+                        "\"Integridad rota: se encontraron credenciales pero no datos completos para email: \" + email"
+                ));
 
         // 5. Devolver el DTO de respuesta
-        // TODO: Descomentar cuando la generación de tokens esté lista
-        // return new LoginResponseDTO(accessToken, refreshToken);
+        return new LoginResponseDTO(accessToken, refreshToken, idSesionUnica, usuario);
     }
 
     @Override
