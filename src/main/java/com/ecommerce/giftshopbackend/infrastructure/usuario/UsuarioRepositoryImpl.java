@@ -1,6 +1,7 @@
 // infrastructure/usuario/UsuarioRepositoryImpl.java
 package com.ecommerce.giftshopbackend.infrastructure.usuario;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import static org.jooq.impl.DSL.field;
@@ -8,12 +9,17 @@ import static com.ecommerce.giftshopbackend.jooq.tables.UsuarioDetalle.USUARIO_D
 import static com.ecommerce.giftshopbackend.jooq.tables.Usuario.USUARIO;
 import static com.ecommerce.giftshopbackend.jooq.tables.Genero.GENERO;
 
-import com.ecommerce.giftshopbackend.domain.usuario.Usuario;
+import com.ecommerce.giftshopbackend.domain.exception.ResourceNotFoundException;
+import com.ecommerce.giftshopbackend.domain.usuario.UsuarioCredencialesDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioPublicDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioRepository;
 import org.jooq.DSLContext;
+import org.jooq.DataType;
+import org.jooq.Field;
+import org.jooq.exception.DataAccessException;
 import org.springframework.stereotype.Repository;
+import static org.jooq.impl.DSL.*;
 
 // SRC/infrastructure/usuario/UsuarioRepositoryImpl.java -> SRC/domain/usuario/Usuario.java, SRC/domain/usuario/UsuarioPublicDTO.java, SRC/domain/usuario/UsuarioRepository.java
 
@@ -27,24 +33,72 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     }
 
     @Override
-    public Usuario actualizarDetalles(Long id, Usuario nuevosDetalles) {
-        dsl.update(USUARIO_DETALLE)
-                .set(USUARIO_DETALLE.NOMBRE, nuevosDetalles.getNombre())
-                .set(USUARIO_DETALLE.APELLIDO, nuevosDetalles.getApellido())
-                .set(USUARIO_DETALLE.DIRECCION, nuevosDetalles.getDireccion())
-                .set(USUARIO_DETALLE.TELEFONO, nuevosDetalles.getTelefono())
-                .set(USUARIO_DETALLE.PAIS, nuevosDetalles.getPais())
-                .set(USUARIO_DETALLE.FECHA_NACIMIENTO, nuevosDetalles.getFechaNacimiento())
-                .set(USUARIO_DETALLE.GENERO_ID, nuevosDetalles.getGeneroId())
-                .set(USUARIO_DETALLE.AVATAR_URL, nuevosDetalles.getAvatarUrl())
-                .set(USUARIO_DETALLE.LOCALE, nuevosDetalles.getLocale())
-                .set(USUARIO_DETALLE.INTERESES,
-                        nuevosDetalles.getIntereses() != null ? String.join(",", nuevosDetalles.getIntereses()) : null)
-                .set(USUARIO_DETALLE.FECHA_MODIFICACION, LocalDateTime.now())
-                .where(USUARIO_DETALLE.ID.eq(id.intValue()))
-                .execute();
+    public UsuarioDTO actualizarDetallesUsuario(Long id, UsuarioDTO nuevosDetalles) {
 
-        return nuevosDetalles;
+        try {
+            String currentNickname = dsl.select(USUARIO.NICKNAME)
+                    .from(USUARIO)
+                    .where(USUARIO.ID.eq(id.intValue()))
+                    .fetchOptional(USUARIO.NICKNAME)
+                    .orElse(null);
+
+            if (currentNickname == null) {
+                throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
+            }
+
+            // --- 1. Lógica específica para NICKNAME (Tabla USUARIO) ---
+            String nuevoNickname = nuevosDetalles.getNickname();
+
+            if (!Objects.equals(nuevoNickname, currentNickname) && nuevoNickname != null) {
+                dsl.update(USUARIO)
+                        .set(USUARIO.NICKNAME, nuevoNickname)
+                        .where(USUARIO.ID.eq(id.intValue()))
+                        .execute();
+            }
+
+            // --- PREPARAR VALOR DE UBICACIÓN ---
+            // Obtener el tipo de dato del campo objetivo
+            DataType<?> ubicacionDataType = USUARIO_DETALLE.UBICACION.getDataType();
+            // Declarar una variable para la expresión de campo (usamos comodín <?>)
+            Field<?> ubicacionValueExpression;
+            if (nuevosDetalles.getLatitud() != null && nuevosDetalles.getLongitud() != null) {
+                // Si hay lat/lon, crear la expresión field()
+                ubicacionValueExpression = field(
+                        "ST_SetSRID(ST_MakePoint({0}, {1}), 4326)",
+                        ubicacionDataType, // Usar el DataType obtenido
+                        val(nuevosDetalles.getLongitud()),
+                        val(nuevosDetalles.getLatitud())
+                );
+
+                dsl.update(USUARIO_DETALLE)
+                        // Mapeo de lat/lon a Point usando PostGI
+                        .set(USUARIO_DETALLE.UBICACION, ubicacionValueExpression)
+                        .where(USUARIO_DETALLE.ID.eq(id.intValue())) // SIN .intValue()
+                        .execute();
+            } else {
+                // Si no hay lat/lon, crear una expresión de valor NULL explícito
+                ubicacionValueExpression = val(null, ubicacionDataType);
+            }
+
+            dsl.update(USUARIO_DETALLE)
+                    .set(USUARIO_DETALLE.NOMBRE, nuevosDetalles.getNombre())
+                    .set(USUARIO_DETALLE.APELLIDO, nuevosDetalles.getApellido())
+                    .set(USUARIO_DETALLE.DIRECCION, nuevosDetalles.getDireccion())
+                    .set(USUARIO_DETALLE.TELEFONO, nuevosDetalles.getTelefono())
+                    .set(USUARIO_DETALLE.PAIS, nuevosDetalles.getPais())
+                    .set(USUARIO_DETALLE.FECHA_NACIMIENTO, nuevosDetalles.getFechaNacimiento())
+                    .set(USUARIO_DETALLE.GENERO_ID, nuevosDetalles.getGeneroId())
+                    .set(USUARIO_DETALLE.AVATAR_URL, nuevosDetalles.getAvatarUrl())
+                    .set(USUARIO_DETALLE.LOCALE, nuevosDetalles.getLocale())
+                    .set(USUARIO_DETALLE.INTERESES,
+                            nuevosDetalles.getIntereses() != null ? String.join(",", nuevosDetalles.getIntereses()) : null)
+                    .where(USUARIO_DETALLE.ID.eq(id.intValue()))
+                    .execute();
+
+            return nuevosDetalles;
+        } catch (DataAccessException e) {
+            throw new DataAccessException("¡ERROR de base de datos al actualizar usuario " + id + "! Causa: " + e.getMessage());
+        }
     }
 
     @Override
@@ -122,5 +176,23 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
                         .fetchOneInto(UsuarioDTO.class) // Obtener un resultado y mapearlo a UsuarioDTO
         );
+    }
+
+    // --- IMPLEMENTACIÓN DEL NUEVO MÉTODO ---
+    @Override
+    public Optional<UsuarioCredencialesDTO> findCredentialsByEmail(String email) {
+        // Seleccionamos los campos de la tabla Usuario que coinciden con UsuarioCredencialesDTO
+        return dsl.select(
+                        USUARIO.ID,                 // Mapeará a id (Long/Integer)
+                        USUARIO.NICKNAME,           // Mapeará a nickname (String)
+                        USUARIO.EMAIL,              // Mapeará a email (String)
+                        USUARIO.PASSWORD_HASH,      // Mapeará a passwordHash (String)
+                        USUARIO.FECHA_CREATED,      // Mapeará a fechaCreated (LocalDateTime)
+                        USUARIO.REFERIDO_POR,       // Mapeará a referidoPor (Integer)
+                        USUARIO.FECHA_MODIFICACION  // Mapeará a fechaModificacion (LocalDateTime)
+                )
+                .from(USUARIO)
+                .where(USUARIO.EMAIL.eq(email))
+                .fetchOptionalInto(UsuarioCredencialesDTO.class);
     }
 }

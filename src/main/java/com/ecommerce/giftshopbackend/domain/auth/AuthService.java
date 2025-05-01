@@ -3,6 +3,7 @@ package com.ecommerce.giftshopbackend.domain.auth;
 
 // Necesitaremos el DTO de respuesta que definimos antes
 // import com.ecommerce.giftshopbackend.domain.dto.auth.LoginResponseDTO; // Asegúrate de que la ruta sea correcta
+import com.ecommerce.giftshopbackend.domain.exception.AuthenticationException;
 
 public interface AuthService {
 
@@ -15,8 +16,14 @@ public interface AuthService {
      * @return Un objeto LoginResponseDTO con los tokens.
      * @throws AuthenticationException Si las credenciales son inválidas o el usuario no puede autenticarse.
      */
-    LoginResponseDTO authenticateUser(String email, String password);
+    LoginResponseDTO authenticateUserByPassword(String email, String password);
 
-    // TODO: Añadir métodos para refrescar tokens, logout, etc.
+    void initiateOtpLogin(String email) throws AuthenticationException;
+
+    LoginResponseDTO verifyOtpAndLogin(String email, String otpCode) throws AuthenticationException;
+
+    LoginResponseDTO refreshJwtToken(String refreshToken) throws AuthenticationException;
+
+    void logout(String tokenOrUserId); // Puedes decidir si usar el token o el ID del usuario
 
 }

@@ -2,7 +2,6 @@
 // UsuarioService.java (relevante para estos endpoints)
 package com.ecommerce.giftshopbackend.domain.usuario;
 
-import com.ecommerce.giftshopbackend.infrastructure.usuario.UsuarioRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,14 +11,14 @@ import java.util.Optional;
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepositoryImpl usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(UsuarioRepositoryImpl usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario actualizarDetalles(Long id, Usuario nuevosDetalles) {
-        return usuarioRepository.actualizarDetalles(id, nuevosDetalles);
+    public UsuarioDTO actualizarDetalles(Long id, UsuarioDTO nuevosDetalles) {
+        return usuarioRepository.actualizarDetallesUsuario(id, nuevosDetalles);
     }
 
     public Optional<UsuarioPublicDTO> obtenerUsuarioPublico(Long id) {

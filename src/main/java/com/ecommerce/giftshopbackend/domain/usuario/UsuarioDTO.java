@@ -25,6 +25,8 @@ public class UsuarioDTO {
     private Double longitud;
 
     private LocalDate fechaNacimiento;
+
+    private Integer generoId;
     private String genero; // Ahora la vista da la descripción del género (String)
     private String estado; // Asumiendo que el estado es un String en la DB
 
@@ -130,6 +132,10 @@ public class UsuarioDTO {
     public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
+
+    public Integer getGeneroId() { return generoId; }
+
+    public void setGeneroId(Integer generoId) { this.generoId = generoId; }
 
     public String getGenero() {
         return genero;

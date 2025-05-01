@@ -1,7 +1,7 @@
 // UsuarioController.java
 package com.ecommerce.giftshopbackend.api;
 
-import com.ecommerce.giftshopbackend.domain.usuario.Usuario;
+import com.ecommerce.giftshopbackend.domain.usuario.UsuarioDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioPublicDTO;
 import com.ecommerce.giftshopbackend.domain.usuario.UsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}/details")
-    public ResponseEntity<Usuario> actualizarDetalles(@PathVariable Long id, @RequestBody Usuario detallesActualizados) {
+    public ResponseEntity<UsuarioDTO> actualizarDetalles(@PathVariable Long id, @RequestBody UsuarioDTO detallesActualizados) {
         return ResponseEntity.ok(usuarioService.actualizarDetalles(id, detallesActualizados));
     }
 
